@@ -109,8 +109,28 @@ def only_choice(values):
     You should be able to complete this function by copying your code from the classroom
     """
     # TODO: Copy your code from the classroom to complete this function
-    raise NotImplementedError
-
+    # for each unit
+    for unit in unitlist:
+        # for each digit
+        for digit in "123456789":
+            appear_ct= 0
+            appear_box=''
+            # check the digit in each box of the unit
+            for box in unit:
+                # if digit in the box, update counter 
+                # and box index
+                if digit in values[box]:
+                    appear_ct= appear_ct + 1
+                    appear_box= box
+                # if not unique skip checking
+                if appear_ct > 1:
+                    break
+            # after checking, if unique, update the box
+            if appear_ct == 1:
+                values[appear_box]= digit
+                           
+    return values
+    
 
 def reduce_puzzle(values):
     """Reduce a Sudoku puzzle by repeatedly applying all constraint strategies
