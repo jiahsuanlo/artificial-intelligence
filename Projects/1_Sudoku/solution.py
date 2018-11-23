@@ -8,8 +8,8 @@ square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','45
 unitlist = row_units + column_units + square_units
 
 # TODO: Update the unit list to add the new diagonal units
-diag_units= [r+c for r,c in zip(rows,cols)]
-rev_diag_units= [r+c for r,c in zip(rows, cols[-1::-1])]
+diag_units=[[r+c for r,c in zip(rows,cols)]]
+rev_diag_units= [[r+c for r,c in zip(rows, cols[-1::-1])]]
 unitlist = unitlist + diag_units + rev_diag_units
 
 
@@ -76,8 +76,16 @@ def eliminate(values):
         The values dictionary with the assigned values eliminated from peers
     """
     # TODO: Copy your code from the classroom to complete this function
+    # for each box in the puzzle
     for box,value in values.items():
-        for peer in peers[box]:
+        if len(value)==1:
+            # for each peer of the current box
+            for peer in peers[box]:
+                # check whether the peer has the value
+                # if so, remove it
+                if len(values[peer])>1:
+                    values[peer]= values[peer].replace(value,"")
+    return values
             
 
 def only_choice(values):
@@ -168,9 +176,8 @@ def solve(grid):
 if __name__ == "__main__":
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
     display(grid2values(diag_sudoku_grid))
-    #result = solve(diag_sudoku_grid)
-    #display(result)
-    
+    result = solve(diag_sudoku_grid)
+    display(result)
     
 
     try:
