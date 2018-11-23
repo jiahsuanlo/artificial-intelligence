@@ -8,7 +8,9 @@ square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','45
 unitlist = row_units + column_units + square_units
 
 # TODO: Update the unit list to add the new diagonal units
-unitlist = unitlist
+diag_units= [r+c for r,c in zip(rows,cols)]
+rev_diag_units= [r+c for r,c in zip(rows, cols[-1::-1])]
+unitlist = unitlist + diag_units + rev_diag_units
 
 
 # Must be called after all units (including diagonals) are added to the unitlist
@@ -74,8 +76,9 @@ def eliminate(values):
         The values dictionary with the assigned values eliminated from peers
     """
     # TODO: Copy your code from the classroom to complete this function
-    raise NotImplementedError
-
+    for box,value in values.items():
+        for peer in peers[box]:
+            
 
 def only_choice(values):
     """Apply the only choice strategy to a Sudoku puzzle
@@ -165,8 +168,10 @@ def solve(grid):
 if __name__ == "__main__":
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
     display(grid2values(diag_sudoku_grid))
-    result = solve(diag_sudoku_grid)
-    display(result)
+    #result = solve(diag_sudoku_grid)
+    #display(result)
+    
+    
 
     try:
         import PySudoku
