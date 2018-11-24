@@ -55,11 +55,14 @@ def naked_twins(values):
     Pseudocode for this algorithm on github:
     https://github.com/udacity/artificial-intelligence/blob/master/Projects/1_Sudoku/pseudocode.md
     """
-    # TODO: Implement this function!
+    # create a hard copy
     out= values.copy()
+    # for each boxA
     for boxA,valueA in values.items():
+        # for each peer boxB of the boxA
         for boxB in peers[boxA]:
             valueB= values[boxB]
+            # if they are twins, remove their numbers from their peers INTERSECTION 
             if (len(valueA) == 2) and (len(valueB) == 2) and (valueA == valueB):
                 for peer in peers[boxA]&peers[boxB]:
                     for digit in valueA:
@@ -84,7 +87,6 @@ def eliminate(values):
     dict
         The values dictionary with the assigned values eliminated from peers
     """
-    # TODO: Copy your code from the classroom to complete this function
     # for each box in the puzzle
     for box,value in values.items():
         if len(value)==1:
@@ -117,7 +119,6 @@ def only_choice(values):
     -----
     You should be able to complete this function by copying your code from the classroom
     """
-    # TODO: Copy your code from the classroom to complete this function
     # for each unit
     for unit in unitlist:
         # for each digit
@@ -155,7 +156,6 @@ def reduce_puzzle(values):
         The values dictionary after continued application of the constraint strategies
         no longer produces any changes, or False if the puzzle is unsolvable 
     """
-    # TODO: Copy your code from the classroom and modify it to complete this function
     stalled = False
     ct= 1
     while not stalled:
@@ -201,13 +201,11 @@ def search(values):
     You should be able to complete this function by copying your code from the classroom
     and extending it to call the naked twins strategy.
     """
-    # TODO: Copy your code from the classroom to complete this function
-    # termination condifion
+    # Termination condifion: if all boxes are solved, return the puzzle values
     solved_values= len([box for box in values.keys() if len(values[box]) == 1])
     if solved_values==81:
         return values
-    
-    
+        
     # First, reduce the puzzle using the previous function
     reduced_values= reduce_puzzle(values) 
     if reduced_values== False:
@@ -215,7 +213,7 @@ def search(values):
         
     # Choose one of the unfilled squares with the fewest possibilities
     k_fewest= 'A1'
-    min_possibility= 1000 # a big number
+    min_possibility= float('inf') # a big number
     for k,v in reduced_values.items():
         # only for unsolved box
         possibility= len(v) 
