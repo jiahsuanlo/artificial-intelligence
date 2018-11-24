@@ -156,8 +156,31 @@ def reduce_puzzle(values):
         no longer produces any changes, or False if the puzzle is unsolvable 
     """
     # TODO: Copy your code from the classroom and modify it to complete this function
-    raise NotImplementedError
+    stalled = False
+    ct= 1
+    while not stalled:
+        # Check how many boxes have a determined value
+        solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
 
+        # Your code here: Use the Eliminate Strategy
+        values= eliminate(values)
+
+        # Your code here: Use the Only Choice Strategy
+        values= only_choice(values)
+        
+        # Use the naked twin strategy
+        values= naked_twins(values)
+                
+        # Check how many boxes have a determined value, to compare
+        solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
+        
+        # If no new values were added, stop the loop.
+        stalled = solved_values_before == solved_values_after
+        # Sanity check, return False if there is a box with zero available values:
+        if len([box for box in values.keys() if len(values[box]) == 0]):
+            return False
+        ct= ct+1
+    return values
 
 def search(values):
     """Apply depth first search to solve Sudoku puzzles in order to solve puzzles
@@ -179,7 +202,35 @@ def search(values):
     and extending it to call the naked twins strategy.
     """
     # TODO: Copy your code from the classroom to complete this function
-    raise NotImplementedError
+    # termination condifion
+    solved_values= len([box for box in values.keys() if len(values[box]) == 1])
+    if solved_values==81:
+        return values
+    
+    
+    # First, reduce the puzzle using the previous function
+    reduced_values= reduce_puzzle(values) 
+    if reduced_values== False:
+        return False
+        
+    # Choose one of the unfilled squares with the fewest possibilities
+    k_fewest= 'A1'
+    min_possibility= 1000 # a big number
+    for k,v in reduced_values.items():
+        # only for unsolved box
+        possibility= len(v) 
+        if ( possibility>1) and (possibility< min_possibility):
+            min_possibility= possibility
+            k_fewest= k
+    
+    # Now use recursion to solve each one of the resulting sudokus, and if one returns a value (not False), return that answer!
+    # update reduced values
+    for v in reduced_values[k_fewest]:
+        new_values= reduced_values.copy()
+        new_values[k_fewest]= v # replace with one of the possibilities
+        attempt= search(new_values)
+        if attempt:
+            return attempt
 
 
 def solve(grid):
