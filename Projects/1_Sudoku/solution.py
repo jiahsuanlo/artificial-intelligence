@@ -55,14 +55,11 @@ def naked_twins(values):
     Pseudocode for this algorithm on github:
     https://github.com/udacity/artificial-intelligence/blob/master/Projects/1_Sudoku/pseudocode.md
     """
-    # create a hard copy
+    # TODO: Implement this function!
     out= values.copy()
-    # for each boxA
     for boxA,valueA in values.items():
-        # for each peer boxB of the boxA
         for boxB in peers[boxA]:
             valueB= values[boxB]
-            # if they are twins, remove their numbers from their peers INTERSECTION 
             if (len(valueA) == 2) and (len(valueB) == 2) and (valueA == valueB):
                 for peer in peers[boxA]&peers[boxB]:
                     for digit in valueA:
