@@ -84,18 +84,13 @@ def eliminate(values):
     dict
         The values dictionary with the assigned values eliminated from peers
     """
-    # TODO: Copy your code from the classroom to complete this function
-    # for each box in the puzzle
-    for box,value in values.items():
-        if len(value)==1:
-            # for each peer of the current box
-            for peer in peers[box]:
-                # check whether the peer has the value
-                # if so, remove it
-                if len(values[peer])>1:
-                    values[peer]= values[peer].replace(value,"")
+    solved_values = [box for box in values.keys() if len(values[box]) == 1]
+    for box in solved_values:
+        digit = values[box]
+        for peer in peers[box]:
+            values[peer] = values[peer].replace(digit,'')
     return values
-            
+        
 
 def only_choice(values):
     """Apply the only choice strategy to a Sudoku puzzle
@@ -117,29 +112,13 @@ def only_choice(values):
     -----
     You should be able to complete this function by copying your code from the classroom
     """
-    # TODO: Copy your code from the classroom to complete this function
-    # for each unit
     for unit in unitlist:
-        # for each digit
-        for digit in "123456789":
-            appear_ct= 0
-            appear_box=''
-            # check the digit in each box of the unit
-            for box in unit:
-                # if digit in the box, update counter 
-                # and box index
-                if digit in values[box]:
-                    appear_ct= appear_ct + 1
-                    appear_box= box
-                # if not unique skip checking
-                if appear_ct > 1:
-                    break
-            # after checking, if unique, update the box
-            if appear_ct == 1:
-                values[appear_box]= digit
-                           
+        for digit in '123456789':
+            dplaces = [box for box in unit if digit in values[box]]
+            if len(dplaces) == 1:
+                values[dplaces[0]] = digit
     return values
-    
+
 
 def reduce_puzzle(values):
     """Reduce a Sudoku puzzle by repeatedly applying all constraint strategies
@@ -155,32 +134,24 @@ def reduce_puzzle(values):
         The values dictionary after continued application of the constraint strategies
         no longer produces any changes, or False if the puzzle is unsolvable 
     """
-    # TODO: Copy your code from the classroom and modify it to complete this function
     stalled = False
-    ct= 1
     while not stalled:
         # Check how many boxes have a determined value
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
-
-        # Your code here: Use the Eliminate Strategy
-        values= eliminate(values)
-
-        # Your code here: Use the Only Choice Strategy
-        values= only_choice(values)
-        
-        # Use the naked twin strategy
+        # Use the Eliminate Strategy
+        values = eliminate(values)
+        # Use the Only Choice Strategy
+        values = only_choice(values)
         values= naked_twins(values)
-                
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
-        
         # If no new values were added, stop the loop.
         stalled = solved_values_before == solved_values_after
         # Sanity check, return False if there is a box with zero available values:
         if len([box for box in values.keys() if len(values[box]) == 0]):
             return False
-        ct= ct+1
     return values
+
 
 def search(values):
     """Apply depth first search to solve Sudoku puzzles in order to solve puzzles
@@ -201,37 +172,20 @@ def search(values):
     You should be able to complete this function by copying your code from the classroom
     and extending it to call the naked twins strategy.
     """
-    # TODO: Copy your code from the classroom to complete this function
-    # termination condifion
-    solved_values= len([box for box in values.keys() if len(values[box]) == 1])
-    if solved_values==81:
-        return values
-    
-    
-    # First, reduce the puzzle using the previous function
-    reduced_values= reduce_puzzle(values) 
-    if reduced_values== False:
-        return False
-        
+    values = reduce_puzzle(values)
+    if values is False:
+        return False ## Failed earlier
+    if all(len(values[s]) == 1 for s in boxes): 
+        return values ## Solved!
     # Choose one of the unfilled squares with the fewest possibilities
-    k_fewest= 'A1'
-    min_possibility= 1000 # a big number
-    for k,v in reduced_values.items():
-        # only for unsolved box
-        possibility= len(v) 
-        if ( possibility>1) and (possibility< min_possibility):
-            min_possibility= possibility
-            k_fewest= k
-    
-    # Now use recursion to solve each one of the resulting sudokus, and if one returns a value (not False), return that answer!
-    # update reduced values
-    for v in reduced_values[k_fewest]:
-        new_values= reduced_values.copy()
-        new_values[k_fewest]= v # replace with one of the possibilities
-        attempt= search(new_values)
+    n,s = min((len(values[s]), s) for s in boxes if len(values[s]) > 1)
+    # Now use recurrence to solve each one of the resulting sudokus, and 
+    for value in values[s]:
+        new_sudoku = values.copy()
+        new_sudoku[s] = value
+        attempt = search(new_sudoku)
         if attempt:
             return attempt
-
 
 def solve(grid):
     """Find the solution to a Sudoku puzzle using search and constraint propagation
@@ -254,7 +208,12 @@ def solve(grid):
 
 
 if __name__ == "__main__":
-    diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    # original one
+    #diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    
+    # submit test one:
+    diag_sudoku_grid= "...7.9....85...31.2......7...........1..7.6......8...7.7.........3......85......."
+    
     display(grid2values(diag_sudoku_grid))
     result = solve(diag_sudoku_grid)
     display(result)
