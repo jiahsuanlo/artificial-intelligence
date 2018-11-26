@@ -1,4 +1,5 @@
 # Artificial Intelligence Nanodegree Program Resources
+This is my personal AI nanodegree coursework starting on Nov 20, 2018.  
 
 ## Classroom Exercises
 
