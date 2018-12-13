@@ -11,6 +11,9 @@ class ActionLayer(BaseActionLayer):
     def _inconsistent_effects(self, actionA, actionB):
         """ Return True if an effect of one action negates an effect of the other
 
+        Input:
+            actionA, actionB: two input actions (layers.ActionNode)
+        
         Hints:
             (1) `~Literal` can be used to logically negate a literal
             (2) `self.children` contains a map from actions to effects
@@ -20,12 +23,16 @@ class ActionLayer(BaseActionLayer):
         layers.ActionNode
         """
         # TODO: implement this function
-        raise NotImplementedError
-
+        for effectA in actionA.effects:
+            for effectB in actionB.effects:
+                if effectB == ~effectA:
+                    return True
 
     def _interference(self, actionA, actionB):
         """ Return True if the effects of either action negate the preconditions of the other 
 
+        Input:
+            actionA, actionB: two input actions (layers.ActionNode)
         Hints:
             (1) `~Literal` can be used to logically negate a literal
             (2) `self.parents` contains a map from actions to preconditions
@@ -35,7 +42,14 @@ class ActionLayer(BaseActionLayer):
         layers.ActionNode
         """
         # TODO: implement this function
-        raise NotImplementedError
+        for effectA in actionA.effects:
+            for precondB in actionB.effects:
+                if effectA == ~precondB:
+                    return True
+        for effectB in actionB.effects:
+            for precondA in actionA.effects:
+                if effectB == ~precondA:
+                    return True
 
     def _competing_needs(self, actionA, actionB):
         """ Return True if any preconditions of the two actions are pairwise mutex in the parent layer
@@ -72,7 +86,8 @@ class LiteralLayer(BaseLiteralLayer):
     def _negation(self, literalA, literalB):
         """ Return True if two literals are negations of each other """
         # TODO: implement this function
-        raise NotImplementedError
+        if literalA == ~literalB:
+            return True
 
 
 class PlanningGraph:
