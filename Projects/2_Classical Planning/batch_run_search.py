@@ -32,6 +32,7 @@ def ParseResultFile(filename):
 def BatchRunSearch(probs, algs):
     for pb in probs:
         for ag in algs:
+            print("Run search on problem %d using search algorithm %d"%(pb,ag))
             out_file= "out_p%d_s%d.txt"%(pb,ag)
             cmd_str= "python run_search.py -p %d -s %d > %s"%(pb, ag, out_file)
             os.system(cmd_str)
@@ -43,6 +44,7 @@ def PostProcResults(probs, algs, filename= "summary.csv"):
         for ag in algs:
             out_file= "out_p%d_s%d.txt"%(pb,ag)
             res= ParseResultFile(out_file)
+            print("post processing: ",out_file)
             fid.write("%d,%d,%d,%d,%d,%d,%d,%f\n"%(pb,ag,\
                                              res["NumOfActions"],\
                                              res["NumOfExpansions"],\
@@ -56,14 +58,15 @@ def PostProcResults(probs, algs, filename= "summary.csv"):
     
 if __name__=="__main__":
     
+    # full set
     probs=[1,2]
     algs= [1,2,3,4,5,6,7,8,9,10,11]
     
-    probs=[1]
-    algs= [1,2,3,4]
+    #probs=[2]
+    #algs= [10]
     
     # batch run
-    BatchRunSearch(probs, algs)
+    #BatchRunSearch(probs, algs)
     
     # Post Proc Results
     PostProcResults(probs, algs)
