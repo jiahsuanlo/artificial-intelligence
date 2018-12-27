@@ -4,6 +4,7 @@
 # that meet the three requirements specified
 import copy
 
+call_counter = 0
 xlim= 3
 ylim= 2
 class GameState:
@@ -121,6 +122,8 @@ class GameState:
         player is not active in the current state)
         """
         # TODO: Finish this function!
+        global call_counter
+        call_counter += 1
         for loc in self._player_locations:
             open_cells= self.liberties(loc)
             if len(open_cells)==0:

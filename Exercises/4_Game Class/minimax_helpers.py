@@ -10,9 +10,6 @@ def min_value(gameState):
             player 1, NOT for the "active" player
     """
     # TODO: finish this function!
-    if type(gameState)=='float':
-        haha= 1
-    
     if gameState.terminal_test():
         return gameState.utility(0)
     v= float("inf")
@@ -29,8 +26,6 @@ def max_value(gameState):
             player 1, NOT for the "active" player
     """
     # TODO: finish this function!
-    if type(gameState)=='float':
-        haha= 1
     if gameState.terminal_test():
         return gameState.utility(0)
     v= float("-inf")
