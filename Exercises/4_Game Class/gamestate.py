@@ -1,117 +1,64 @@
-# -*- coding: utf-8 -*-
 
-# TODO: implement the __init__ class below by adding properties
-# that meet the three requirements specified
-import copy
+# Please use this implementation for compatability with the test cases
+
+from copy import deepcopy
 
 call_counter = 0
-xlim= 3
-ylim= 2
-class GameState:
+xlim, ylim = 3, 2  # board dimensions
 
-    def __init__(self):
-        """The GameState class constructor performs required
-        initializations when an instance is created. The class
-        should:
-        
-        1) Keep track of which cells are open/closed
-        2) Identify which player has initiative
-        3) Record the current location of each player
-        
-        Parameters
-        ----------
-        self:
-            instance methods automatically take "self" as an
-            argument in python
-        _board: board[x][y], 0:open and 1:closed
-        _parity: 0:player1 , 1:player2
-        _player_locations: [(x1,y1),(x2,y2)]
-        Returns
-        -------
-        None
-        """
-        # You can define attributes like this:
-        # self.value = 73  # an arbitrary number
-        # reassign it to a string (variable type is dynamic in Python)
-        # self.value = "some string"
-        # self.foo = []  # create an empty list
-        self._board=[[0]*ylim for _ in range(xlim)]
-        self._board[-1][-1] = 1  # block lower-right corner
-        self._parity= 0
-        self._player_locations= [None, None]
+# The eight movement directions possible for a chess queen
+RAYS = [(1, 0), (1, -1), (0, -1), (-1, -1),
+        (-1, 0), (-1, 1), (0, 1), (1, 1)]
+
+
+class GameState:
+    """
+    Attributes
+    ----------
+    _board: list(list)
+        Represent the board with a 2d array _board[x][y]
+        where open spaces are 0 and closed spaces are 1
     
-    def liberties(self, loc):
-        """ Return a list of all open cells in the
-        neighborhood of the specified location.  The list 
-        should include all open spaces in a straight line
-        along any row, column or diagonal from the current
-        position. (Tokens CANNOT move through obstacles
-        or blocked squares in queens Isolation.)
-        
-        Note: if loc is None, then return all empty cells
-        on the board
-        """
-        # if input is none, return all empty cells
-        if loc==None:
-            open_cells= []
-            for x in range(xlim):
-                for y in range(ylim):
-                    if self._board[x][y]==0:
-                        open_cells.append((x,y))
-            return open_cells
-            
-        
-        steps= [(1,0),(1,1),(0,1),(-1,1),(-1,0),(-1,-1),(0,-1),(1,-1)]
-        open_cells=[]
-        for s in steps:
-            newloc= loc
-            while True:
-                newloc= (newloc[0]+ s[0],newloc[1]+s[1])
-                if newloc[0] >= 0 and newloc[0]<xlim and\
-                newloc[1]>=0 and newloc[1]<ylim and \
-                self._board[newloc[0]][newloc[1]]==0:
-                    open_cells.append(newloc)
-                else:
-                    break
-        return open_cells
+    _parity: bool
+        Keep track of active player initiative (which
+        player has control to move) where 0 indicates that
+        player one has initiative and 1 indicates player 2
+    
+    _player_locations: list(tuple)
+        Keep track of the current location of each player
+        on the board where position is encoded by the
+        board indices of their last move, e.g., [(0, 0), (1, 0)]
+        means player 1 is at (0, 0) and player 2 is at (1, 0)
+    """
+    def __init__(self):
+        self._board = [[0] * ylim for _ in range(xlim)]
+        self._board[-1][-1] = 1  # block lower-right corner
+        self._parity = 0
+        self._player_locations = [None, None]
+    
+    @property
+    def hashable(self):
+        from itertools import chain
+        return tuple(chain(*self._board)) + tuple(self._player_locations) + (self._parity, )
         
     def actions(self):
-        """ Return a list of legal actions for the active player 
-        
-        You are free to choose any convention to represent actions,
-        but one option is to represent actions by the (row, column)
-        of the endpoint for the token. For example, if your token is
-        in (0, 0), and your opponent is in (1, 0) then the legal
-        actions could be encoded as (0, 1) and (2,0).
-        """
-        # TODO: Finish this function!
+        """ Return a list of legal actions for the active player """
         return self.liberties(self._player_locations[self._parity])
     
     def player(self):
-        """ Return the id of the active player 
-        
-        Hint: return 0 for the first player, and 1 for the second player
-        """
-        # TODO: Finish this function!
+        """ Return the id of the active player """
         return self._parity
     
     def result(self, action):
         """ Return a new state that results from applying the given
         action in the current state
-        
-        Hint: Check out the deepcopy module--do NOT modify the
-        objects internal state in place
         """
-        # TODO: Finish this function!
-        assert action in self.actions()
-        
-        new_state= copy.deepcopy(self)
-        iplayer= self.player()
-        
-        new_state._board[action[0]][action[1]]= 1
-        new_state._parity^=1
-        new_state._player_locations[iplayer]= action
-        return new_state
+        assert action in self.actions(), "Attempted forecast of illegal move"
+        newBoard = deepcopy(self)
+        newBoard._board[action[0]][action[1]] = 1
+        newBoard._player_locations[self._parity] = action
+        newBoard._parity ^= 1
+        return newBoard
     
     def terminal_test(self):
         """ return True if the current state is terminal,
@@ -121,14 +68,11 @@ class GameState:
         player has no remaining liberties (even if the
         player is not active in the current state)
         """
-        # TODO: Finish this function!
         global call_counter
         call_counter += 1
-        for loc in self._player_locations:
-            open_cells= self.liberties(loc)
-            if len(open_cells)==0:
-                return True
-        return False   
+        return (not self._has_liberties(self._parity)
+            or not self._has_liberties(1 - self._parity))
+
     def utility(self, player_id):
         """ return +inf if the game is terminal and the
         specified player wins, return -inf if the game
@@ -137,39 +81,34 @@ class GameState:
         """
         if not self.terminal_test(): return 0
         player_id_is_active = (player_id == self.player())
-        action_list= self.actions()
-        active_has_liberties = (len(action_list)>0)
+        active_has_liberties = self._has_liberties(self.player())
         active_player_wins = (active_has_liberties == player_id_is_active)
         return float("inf") if active_player_wins else float("-inf")
+    
+    def liberties(self, loc):
+        """ Return a list of all open cells in the
+        neighborhood of the specified location.  The list 
+        should include all open spaces in a straight line
+        along any row, column or diagonal from the current
+        position. (Tokens CANNOT move through obstacles
+        or blocked squares in queens Isolation.)
+        """
+        if loc is None: return self._get_blank_spaces()
+        moves = []
+        for dx, dy in RAYS:  # check each movement direction
+            _x, _y = loc
+            while 0 <= _x + dx < xlim and 0 <= _y + dy < ylim:
+                _x, _y = _x + dx, _y + dy
+                if self._board[_x][_y]:  # stop at any blocked cell
+                    break
+                moves.append((_x, _y))
+        return moves
+    
+    def _has_liberties(self, player_id):
+        """ Check to see if the specified player has any liberties """
+        return any(self.liberties(self._player_locations[player_id]))
 
-
-#%% main 
-if __name__ == "__main__":
-    # This code is only executed if "gameagent.py" is the run
-    # as a script (i.e., it is not run if "gameagent.py" is
-    # imported as a module)
-    emptyState = GameState()  # create an instance of the object
-    
-    emptyState._board[0][0]= 1
-    emptyState._board[2][1]= 1
-    print("liberty(1,1):",emptyState.liberties((1,1)))
-    
-    emptyState._player_locations[0]= (1,1)
-    print("current player id:",emptyState.player())
-    print("actions:", emptyState.actions())
-    newState= emptyState.result((2,0))
-    
-    newState1= newState.result((1,1))
-    print("actions for newState1:", newState1.actions())
-    
-    newState2= newState1.result((1,0))
-    print("actions for newState2:", newState2.actions())
-    
-    newState3= newState2.result((0,1))
-    print("actions for newState3:", newState3.actions())
-    
-    print("newState terminate:", newState.terminal_test())
-    print("newState1 terminate:", newState1.terminal_test())
-    print("newState2 terminate:", newState2.terminal_test())
-    print("newState3 terminate:", newState3.terminal_test())
-    
+    def _get_blank_spaces(self):
+        """ Return a list of blank spaces on the board."""
+        return [(x, y) for y in range(ylim) for x in range(xlim)
+                if self._board[x][y] == 0]
