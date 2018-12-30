@@ -42,5 +42,115 @@ class CustomPlayer(DataPlayer):
         # EXAMPLE: choose a random move without any search--this function MUST
         #          call self.queue.put(ACTION) at least once before time expires
         #          (the timer is automatically managed for you)
+        
         import random
-        self.queue.put(random.choice(state.actions()))
+        #self.queue.put(random.choice(state.actions()))
+        
+        #self.queue.put(self.alpha_beta_search(state))
+
+        
+        depth_limit= 4
+        if state.ply_count < 2:
+            self.queue.put(random.choice(state.actions()))
+        else:
+            self.queue.put(self.minimax_decision(state, depth_limit))
+        
+    def my_moves(self,gameState):
+        # TODO: Finish this function!
+        # HINT: the global player_id variable is accessible inside
+        #       this function scope
+        #global player_id
+        own_loc = gameState.locs[self.player_id]
+        opp_loc = gameState.locs[1 - self.player_id]
+        own_liberties = gameState.liberties(own_loc)
+        opp_liberties = gameState.liberties(opp_loc)
+        return len(own_liberties) - len(opp_liberties)
+    
+    def minimax_decision(self,gameState, depth):
+        """ Return the move along a branch of the game tree that
+        has the best possible value.  A move is a pair of coordinates
+        in (column, row) order corresponding to a legal move for
+        the searching player.
+        
+        You can ignore the special case of calling this function
+        from a terminal state.
+        """
+        
+        alpha= float("-inf")
+        beta= float("inf")
+        best_score = float("-inf")
+        best_move = None
+        for a in gameState.actions():
+            # call has been updated with a depth limit
+            v = self.min_value(gameState.result(a), alpha, beta, depth - 1)
+            alpha= max(v,alpha)
+            if v > best_score:
+                best_score = v
+                best_move = a
+        return best_move
+
+    def alpha_beta_search(self, gameState):
+        """ Return the move along a branch of the game tree that
+        has the best possible value.  A move is a pair of coordinates
+        in (column, row) order corresponding to a legal move for
+        the searching player.
+        
+        You can ignore the special case of calling this function
+        from a terminal state.
+        """
+        alpha = float("-inf")
+        beta = float("inf")
+        best_score = float("-inf")
+        best_move = None
+        for a in gameState.actions():
+            v = self.min_value(gameState.result(a),alpha,beta)
+            alpha= max(v,alpha)
+            if v > best_score:
+                best_score = v
+                best_move = a
+        return best_move
+
+    # TODO: modify the function signature to accept an alpha and beta parameter
+    def min_value(self, gameState, alpha, beta, depth=1):
+        """ Return the value for a win (+1) if the game is over,
+        otherwise return the minimum value over all legal child
+        nodes.
+        """
+        if gameState.terminal_test():
+            return gameState.utility(self.player_id)
+        
+        # New conditional depth limit cutoff
+        if depth <= 0:  # "==" could be used, but "<=" is safer 
+            return self.my_moves(gameState)
+        
+        v = float("inf")
+        for a in gameState.actions():
+            # TODO: modify the call to max_value()
+            v = min(v, self.max_value(gameState.result(a),alpha,beta,depth-1))
+            # TODO: update the value bound
+            if v<= alpha:
+                return v
+            beta= min(v, beta)
+        return v
+    
+    # TODO: modify the function signature to accept an alpha and beta parameter
+    def max_value(self, gameState, alpha, beta, depth= 1):
+        """ Return the value for a loss (-1) if the game is over,
+        otherwise return the maximum value over all legal child
+        nodes.
+        """
+        if gameState.terminal_test():
+            return gameState.utility(self.player_id)
+        
+        # New conditional depth limit cutoff
+        if depth <= 0:  # "==" could be used, but "<=" is safer 
+            return self.my_moves(gameState)
+            
+        v = float("-inf")
+        for a in gameState.actions():
+            # TODO: modify the call to min_value()
+            v = max(v, self.min_value(gameState.result(a), alpha, beta, depth-1))
+            # TODO: update the value bound
+            if v>=beta: return v
+            alpha= max(v,alpha)
+        return v
