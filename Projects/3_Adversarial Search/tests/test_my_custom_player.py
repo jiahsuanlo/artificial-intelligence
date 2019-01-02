@@ -1,3 +1,4 @@
+import pdb
 
 import unittest
 
@@ -59,6 +60,6 @@ class CustomPlayerPlayTest(BaseCustomPlayerTest):
         state = initial_state
         moves = deque(game_history)
         while moves: state = state.result(moves.popleft())
-
+        #pdb.set_trace()
         self.assertTrue(state.terminal_test(), "Your agent did not play until a terminal state.")
 
