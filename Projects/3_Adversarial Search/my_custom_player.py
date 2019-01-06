@@ -49,14 +49,15 @@ class CustomPlayer(DataPlayer):
         import random
         #self.queue.put(random.choice(state.actions()))
         
-        self.score= self.score_moves
+#        self.score= self.score_moves
 #        self.score= self.score_center
 #        self.score= self.score_moves2
-#        self.score= self.score_hybrid
+#        self.score= self.score_combined
+        self.score= self.score_progression
         
         #self.score= self.score_contain
         
-        depth_limit= 3
+        depth_limit= 5
         if state.ply_count < 2:            
             self.queue.put(random.choice(state.actions()))
         else:
@@ -152,12 +153,23 @@ class CustomPlayer(DataPlayer):
 
         return (own_area - opp_area)
 
-    def score_hybrid(self, gameState):
+    def score_combined(self, gameState):
         move_score= self.score_moves2(gameState)
         center_score= self.score_center(gameState)
         
         return move_score*0.5 + center_score*0.5
         
+    def score_progression(self, gameState):
+        # count the open locations
+        n_open_spots= bin(gameState.board).count('1')
+        if n_open_spots >80:
+            final_score= self.score_center(gameState)
+        elif n_open_spots >60:                
+            final_score= self.score_moves(gameState)
+        else:
+            final_score= self.score_moves2(gameState)
+        
+        return final_score
     
     # TODO: modify the function signature to accept an alpha and beta parameter
     def min_value(self, gameState, alpha, beta, depth=1):
