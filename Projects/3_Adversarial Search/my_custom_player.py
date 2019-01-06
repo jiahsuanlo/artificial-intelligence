@@ -49,18 +49,19 @@ class CustomPlayer(DataPlayer):
         import random
         #self.queue.put(random.choice(state.actions()))
         
-        #self.score= self.score_moves
+        self.score= self.score_moves
 #        self.score= self.score_center
 #        self.score= self.score_moves2
-        self.score= self.score_hybrid
+#        self.score= self.score_hybrid
         
         #self.score= self.score_contain
         
-        depth_limit= 1
+        depth_limit= 3
         if state.ply_count < 2:            
             self.queue.put(random.choice(state.actions()))
         else:
             self.queue.put(self.minimax_decision(state, depth_limit))
+#            self.queue.put(self.minimax(state, depth_limit))
             
     def score_moves(self,gameState):
         """ Default evaluation function: 
@@ -221,7 +222,7 @@ class CustomPlayer(DataPlayer):
         for a in gameState.actions():
             # call has been updated with a depth limit
             v = self.min_value(gameState.result(a), alpha, beta, depth-1)
-            #alpha= max(v,alpha)
+            alpha= max(v,alpha)
             if v > best_score:
                 best_score = v
                 best_move = a
