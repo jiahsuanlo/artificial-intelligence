@@ -1,4 +1,3 @@
-import pdb
 from sample_players import DataPlayer
 # board array dimensions and bitboard size
 _WIDTH = 11
@@ -52,18 +51,14 @@ class CustomPlayer(DataPlayer):
 #        self.score= self.score_moves
 #        self.score= self.score_center
 #        self.score= self.score_moves2
-#        self.score= self.score_combined
         self.score= self.score_progression
-        
-        #self.score= self.score_contain
         
         depth_limit= 5
         if state.ply_count < 2:            
             self.queue.put(random.choice(state.actions()))
         else:
             self.queue.put(self.minimax_decision(state, depth_limit))
-#            self.queue.put(self.minimax(state, depth_limit))
-            
+           
     def score_moves(self,gameState):
         """ Default evaluation function: 
         number of current player liberties - number of opposing player liberties
@@ -119,45 +114,6 @@ class CustomPlayer(DataPlayer):
         own_center_dist = abs(own_x - center_x) + abs(own_y - center_y) 
         opp_center_dist = abs(opp_x - center_x) + abs(opp_y - center_y)
         return -own_center_dist + opp_center_dist
-         
-    def score_contain(self,gameState):
-        """ 
-        
-        """
-        own_loc = gameState.locs[self.player_id]
-        opp_loc = gameState.locs[1 - self.player_id]
-        
-        center_loc= 57
-        own_x= own_loc%13
-        own_y= own_loc//13
-        opp_x= opp_loc%13
-        opp_y= opp_loc//13
-        center_x= center_loc%13
-        center_y= center_loc//13
-        
-        # determine closest edge for opp
-        if opp_x > 13//2:
-            opp_dx= 13 - opp_x -1
-            own_dx= own_x
-        else:
-            opp_dx= opp_x
-            own_dx= 13 - own_x -1
-        if opp_y > 9//2:
-            opp_dy= 9 - opp_y - 1
-            own_dy= own_y
-        else:
-            opp_dy= opp_y
-            own_dy= 9 - own_y -1
-        opp_area= opp_dx*opp_dy
-        own_area= own_dx*own_dy
-
-        return (own_area - opp_area)
-
-    def score_combined(self, gameState):
-        move_score= self.score_moves2(gameState)
-        center_score= self.score_center(gameState)
-        
-        return move_score*0.5 + center_score*0.5
         
     def score_progression(self, gameState):
         # count the open locations
@@ -238,29 +194,5 @@ class CustomPlayer(DataPlayer):
             if v > best_score:
                 best_score = v
                 best_move = a
-        return best_move
+        return best_move       
         
-        
-        #return max(gameState.actions(), \
-        #           key=lambda x: self.min_value(gameState.result(x),alpha, beta, depth - 1))
-
-    
-    def minimax(self, state, depth):
-
-        def min_value(state, depth):
-            if state.terminal_test(): return state.utility(self.player_id)
-            if depth <= 0: return self.score(state)
-            value = float("inf")
-            for action in state.actions():
-                value = min(value, max_value(state.result(action), depth - 1))
-            return value
-
-        def max_value(state, depth):
-            if state.terminal_test(): return state.utility(self.player_id)
-            if depth <= 0: return self.score(state)
-            value = float("-inf")
-            for action in state.actions():
-                value = max(value, min_value(state.result(action), depth - 1))
-            return value
-
-        return max(state.actions(), key=lambda x: min_value(state.result(x), depth - 1))
